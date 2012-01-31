@@ -175,6 +175,11 @@ public class JFind {
 			
 			if (dir.isDirectory())
 			{
+				if (!dir.canRead())
+				{		
+					System.out.printf("%s: permission denied\n", dir.getName());
+					return;
+				}
 				String[] fileNames = dir.list();
 				for (String name : fileNames) {
 					RecursiveFind(s + name);
