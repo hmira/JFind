@@ -166,10 +166,10 @@ public class JFind {
 					System.out.println(dir.getAbsolutePath());
 				}
 			} catch (NoSuchMethodException e) {
-				System.out.printf("wrong parameters\n");
+				System.err.printf("wrong parameters\n");
 				return;
 			} catch (InvocationTargetException e) {
-				System.out.printf("wrong parameters\n");
+				System.err.printf("wrong parameters\n");
 				return;
 			}
 			
@@ -177,7 +177,7 @@ public class JFind {
 			{
 				if (!dir.canRead())
 				{		
-					System.out.printf("%s: permission denied\n", dir.getName());
+					System.err.printf("%s: permission denied\n", dir.getName());
 					return;
 				}
 				String[] fileNames = dir.list();
