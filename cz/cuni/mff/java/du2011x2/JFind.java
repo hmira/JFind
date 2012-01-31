@@ -3,7 +3,7 @@ package cz.cuni.mff.java.du2011x2;
 
 import java.io.*;
 import java.lang.reflect.*;
-import java.sql.Time;
+//import java.sql.Time;
 import java.util.Calendar;
 import java.util.regex.*;
 
@@ -31,7 +31,7 @@ public class JFind {
 			}
 		}
 		
-		private static Boolean MatchConditions(File f)
+		private static Boolean MatchConditions(File f) throws NoSuchMethodException, InvocationTargetException
 		{
 			if (Conditions == null)
 				return true;
@@ -51,13 +51,9 @@ public class JFind {
 					}
 				} catch (SecurityException e) {
 					e.printStackTrace();
-				} catch (NoSuchMethodException e) {
-					e.printStackTrace();
 				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
-					e.printStackTrace();
-				} catch (InvocationTargetException e) {
 					e.printStackTrace();
 				}
 			}
@@ -78,14 +74,14 @@ public class JFind {
 			s = s.replace(".", "\\.");
 			s = s.replace("?", ".");
 			s = s.replace("*", ".*");
-			Matcher m = (Pattern.compile(s)).matcher(f.getName());
+			Matcher m = (Pattern.compile(s, Pattern.CASE_INSENSITIVE)).matcher(f.getName());
 			return m.matches();
 		}
 		public static Boolean Match_regex(File f, String s) {
 			Matcher m = (Pattern.compile(s)).matcher(f.getName());
 			return m.matches();
 		}
-		public static Boolean Match_size(File f, String s){
+		public static Boolean Match_size(File f, String s) throws NumberFormatException{
 			if (s == "") return false;
 			int coeff = 1;
 			if (s.charAt(s.length() - 1) == 'k')
@@ -99,9 +95,25 @@ public class JFind {
 				s = s.substring(0, s.length() - 2);
 			}
 			int size = Integer.parseInt(s) * coeff;
-			return f.getTotalSpace() == size;
+			return f.length() == size;
 		}
-		public static Boolean Match_ssize(File f, String s){
+		public static Boolean Match_ssize(File f, String s) throws NumberFormatException{
+			if (s == "") return false;
+			int coeff = 1;
+			if (s.charAt(s.length() - 1) == 'k')
+			{
+				coeff = 1024;
+				s = s.substring(0, s.length() - 1);
+			}
+			else if (s.charAt(s.length() - 1) == 'M')
+			{
+				coeff = 1024 * 1024;
+				s = s.substring(0, s.length() - 1);
+			}
+			int size = Integer.parseInt(s) * coeff;
+			return f.length() <= size;
+		}
+		public static Boolean Match_bsize(File f, String s) {
 			if (s == "") return false;
 			int coeff = 1;
 			if (s.charAt(s.length() - 1) == 'k')
@@ -115,43 +127,31 @@ public class JFind {
 				s = s.substring(0, s.length() - 2);
 			}
 			int size = Integer.parseInt(s) * coeff;
-			return f.getTotalSpace() <= size;
+			return f.length() >= size;
 		}
-		public static Boolean Match_bsize(File f, String s){
-			if (s == "") return false;
-			int coeff = 1;
-			if (s.charAt(s.length() - 1) == 'k')
-			{
-				coeff = 1024;
-				s = s.substring(0, s.length() - 2);
-			}
-			else if (s.charAt(s.length() - 1) == 'M')
-			{
-				coeff = 1024 * 1024;
-				s = s.substring(0, s.length() - 2);
-			}
-			int size = Integer.parseInt(s) * coeff;
-			return f.getTotalSpace() >= size;
-		}
-		public static Boolean Match_cnewer(File f, String s){
+		public static Boolean Match_cnewer(File f, String s) throws FileNotFoundException{
 			File ref = new File(s);
-			if (ref == null) 
-				return false;
-			else
+			if (!ref.exists())
+			{
+				FileNotFoundException e = new FileNotFoundException();
+				throw e;
+			}
 				return f.lastModified() > ref.lastModified();
 		}
-		public static Boolean Match_colder(File f, String s) {
+		public static Boolean Match_colder(File f, String s) throws FileNotFoundException {
 			File ref = new File(s);
-			if (ref == null) 
-				return false;
-			else
+			if (!ref.exists())
+			{
+				FileNotFoundException e = new FileNotFoundException();
+				throw e;
+			}
 				return f.lastModified() < ref.lastModified();
 		}
-		public static Boolean Match_cmin(File f, String s){
+		public static Boolean Match_cmin(File f, String s) throws NumberFormatException{
 			if (s=="") return false;
 			long Minutes = Integer.parseInt(s) * 60000;
 			long Current = Calendar.getInstance().getTimeInMillis();
-			return (Current - f.lastModified() > Minutes);
+			return (Current - f.lastModified() < Minutes);
 		}
 		public static void RecursiveFind(String s)
 		{
@@ -160,9 +160,17 @@ public class JFind {
 				s+= "/";
 			File dir = new File(s);
 			
-			if (MatchConditions(dir))
-			{
-				System.out.println(dir.getAbsolutePath());
+			try {
+				if (MatchConditions(dir))
+				{
+					System.out.println(dir.getAbsolutePath());
+				}
+			} catch (NoSuchMethodException e) {
+				System.out.printf("wrong parameters\n");
+				return;
+			} catch (InvocationTargetException e) {
+				System.out.printf("wrong parameters\n");
+				return;
 			}
 			
 			if (dir.isDirectory())
@@ -179,7 +187,6 @@ public class JFind {
 
   public static void main(String[] argv) {
     
-	  File dir = new File(argv[0]);	  
 	  String[] Conditions= new String[argv.length - 1];
 	  for (int i = 1; i < argv.length; i++) {
 		  Conditions[i - 1] = argv[i];
