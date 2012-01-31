@@ -119,12 +119,12 @@ public class JFind {
 			if (s.charAt(s.length() - 1) == 'k')
 			{
 				coeff = 1024;
-				s = s.substring(0, s.length() - 2);
+				s = s.substring(0, s.length() - 1);
 			}
 			else if (s.charAt(s.length() - 1) == 'M')
 			{
 				coeff = 1024 * 1024;
-				s = s.substring(0, s.length() - 2);
+				s = s.substring(0, s.length() - 1);
 			}
 			int size = Integer.parseInt(s) * coeff;
 			return f.length() >= size;
